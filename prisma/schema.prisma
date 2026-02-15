@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+//we will define the schema we want here
+
+//USER , MOVIE, WISHLIST
+
+//table creation
+model User{
+  id String @id @default( uuid())
+  name String
+  email String @unique
+  password String
+  createdAt DateTime @default(now())
+
+  watchlistItems WatchlistItem[]
+  movies Movie[] @relation("MovieCreator")//one to many relation with movie
+}
+
+model Movie{
+  id String @id @default(uuid())
+  title String
+  overview String? //optional
+  releaseYear Int
+  genres String[] @default([])
+  runtime Int?
+  posterUrl String?
+  createdBy String
+  createdAt DateTime @default(now())
+  watchlistItems WatchlistItem[]
+  creator User @relation("MovieCreator",fields:[createdBy],references:[id],onDelete: Cascade) 
+}
+
+
+enum WatchlistStatus{
+  PLANNED
+  WATCHING
+  COMPLETED
+  DROPPED
+}
+model WatchlistItem{
+  id String @id @default(uuid())
+  userId String
+  movieId String
+  status WatchlistStatus @default(PLANNED)//custom type 
+  rating Int?
+  notes String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  //relations
+  user User @relation(fields: [userId],references: [id],onDelete: Cascade)
+  movie Movie @relation(fields: [movieId],references: [id],onDelete: Cascade)
+
+  @@unique([userId,movieId])// no watchlist item can have same user and movie
+
+}
+
+
+//after creating these , we need to migrate npx prisma migrate dev --name some_name to our remote neondb
+//after that we can generate the client npx prisma generate to use it in our codebase
