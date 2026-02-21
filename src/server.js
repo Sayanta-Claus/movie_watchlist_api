@@ -24,9 +24,9 @@ app.use("/watchlist", watchlistRoutes);
 // });
 
 const PORT = 5001; //port number
-const server = app.listen(PORT, () => {
+const server = app.listen(process.env.PORT || PORT, "0.0.0.0", () => {
   //server listening to reqs
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port ${process.env.PORT}`);
 });
 
 //routes needed
